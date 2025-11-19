@@ -1,0 +1,31 @@
+{
+  "meta": { "version": 1, "alg": "Ed25519", "key_id": "main-v1" },
+  "payload": {
+    "issuer": {
+      "issued_at": "2025-11-18T10:30:47.634553Z",
+      "issuer_id": "1",
+      "issuer_username": "mission-shrestha"
+    },
+    "edition": {
+      "id": "ed-enterprise",
+      "code": "enterprise",
+      "name": "Enterprise"
+    },
+    "product": {
+      "id": "prod-data-pipeline",
+      "code": "data-pipeline-app",
+      "name": "Data Pipeline App"
+    },
+    "customer": { "id": "cust-1001", "name": "Corrupted Tampered Corp" },
+    "features": { "max_pipelines": 5, "advanced_export": true },
+    "validity": {
+      "valid_from": "2025-01-01T00:00:00Z",
+      "valid_until": "2025-12-31T23:59:59Z"
+    },
+    "deployment": { "notes": "Demo deployment", "environment": "on-prem-poc" },
+    "license_id": "63c42448-487d-453b-b6e0-eb03a389ecd9",
+    "license_type": "subscription",
+    "usage_limits": { "max_runs_per_day": 50 }
+  },
+  "signature": "gJp8NRcByPLKLfPPPYRoDxdEXy_AKV-KwEvLk7VDTuFgKhqZLroKmZuwx2-G5TsHMN8cxYVi0Rz-yYDfRbNwAg"
+}
