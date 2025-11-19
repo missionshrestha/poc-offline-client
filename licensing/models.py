@@ -1,3 +1,4 @@
+
 import uuid
 from django.db import models
 from django.utils import timezone
@@ -107,4 +108,5 @@ class LicenseUsage(models.Model):
     last_reset_monthly = models.DateField(null=True, blank=True)
 
     def __str__(self):
-        return f"Usage for license {self.license_id}"
+        external_id = getattr(self.license, "license_id", None) or str(self.license_id)
+        return f"Usage for license {external_id}"
