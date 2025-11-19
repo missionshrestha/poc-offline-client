@@ -121,6 +121,9 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-PUBLIC_KEY_PATH = os.getenv("PUBLIC_KEY_PATH", str(BASE_DIR / "keys" / "main-v1-public.pem"))
+PUBLIC_KEY_PATH = os.getenv(
+    "PUBLIC_KEY_PATH",
+    str(BASE_DIR / "licensing" / "keys" / "main-v1-public.pem"),
+)
 
 LICENSE_STATUS_CACHE_SECONDS = int(os.getenv("LICENSE_STATUS_CACHE_SECONDS", "5"))

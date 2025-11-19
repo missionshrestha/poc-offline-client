@@ -219,5 +219,5 @@ __pycache__/
 .vscode/
 .idea/
 
-# Keys (public OK, private never here)
-keys/*.pem
+# Keys 
+*.pem
