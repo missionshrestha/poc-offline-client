@@ -1,6 +1,7 @@
 import React from 'react'
 import { LicenseStatusPanel } from './components/LicenseStatusPanel'
 import { UploadLicensePanel } from './components/UploadLicensePanel'
+import { FeatureGatingDemo } from './components/FeatureGatingDemo'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <main className="app-main">
         <section className="app-main-left">
           <LicenseStatusPanel />
+          <FeatureGatingDemo />
         </section>
         <section className="app-main-right">
           <UploadLicensePanel />
