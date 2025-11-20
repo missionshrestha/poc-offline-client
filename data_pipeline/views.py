@@ -1,4 +1,5 @@
-# data_pipeline/views.py 
+# data_pipeline/views.py
+
 from __future__ import annotations
 
 from rest_framework.views import APIView
@@ -6,7 +7,11 @@ from rest_framework.response import Response
 from rest_framework import status as drf_status
 
 from licensing.enforcement import require_feature
-from licensing.services.validation import LicenseGrants  # type hint only
+from licensing.services.validation import LicenseGrants  # type hint
+from licensing.services.usage_limits import (
+    check_and_increment_usage,
+    UsageCheckResult,
+)
 
 from .serializers import (
     PipelineRunRequestSerializer,
@@ -19,12 +24,12 @@ class PipelineRunView(APIView):
     """
     POST /api/pipelines/run/
 
-    Simulates running a data pipeline. For the POC, we don't actually
-    execute anything heavy; we just echo the request and include license info.
+    Simulates running a data pipeline.
 
     Requires:
       - License status = "valid"
       - features.pipeline_execution == truthy
+      - usage_limits.pipeline_execution.* not exceeded (if configured)
     """
     @require_feature("pipeline_execution")
     def post(self, request, *args, **kwargs):
@@ -32,7 +37,39 @@ class PipelineRunView(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
-        grants: LicenseGrants = getattr(request, "license_grants")  # set by decorator
+        grants: LicenseGrants = getattr(request, "license_grants")
+        installed = getattr(request, "installed_license")
+
+        # Enforce usage limits for this action
+        usage_result: UsageCheckResult = check_and_increment_usage(
+            installed_license=installed,
+            grants=grants,
+            action_key="pipeline_execution",
+        )
+
+        if not usage_result.allowed:
+            # Deny the action with a clear, structured 403 response
+            return Response(
+                {
+                    "error_code": "usage_limit_exceeded",
+                    "detail": usage_result.reason
+                    or "Usage limit exceeded for this action.",
+                    "action": "pipeline_execution",
+                    "license_status": grants.status,
+                    "usage": {
+                        "daily_used": usage_result.daily_used,
+                        "daily_limit": usage_result.daily_limit,
+                        "monthly_used": usage_result.monthly_used,
+                        "monthly_limit": usage_result.monthly_limit,
+                    },
+                },
+                status=drf_status.HTTP_403_FORBIDDEN,
+            )
+
+        # If we get here, we have:
+        # - valid license
+        # - feature allowed
+        # - usage also allowed (counters already incremented)
 
         response_payload = {
             "message": "Pipeline run accepted (stub).",
@@ -44,6 +81,12 @@ class PipelineRunView(APIView):
                 "customer_name": grants.customer_name,
                 "edition_code": grants.edition_code,
                 "features": grants.features,
+            },
+            "usage": {
+                "daily_used": usage_result.daily_used,
+                "daily_limit": usage_result.daily_limit,
+                "monthly_used": usage_result.monthly_used,
+                "monthly_limit": usage_result.monthly_limit,
             },
         }
         return Response(response_payload, status=drf_status.HTTP_200_OK)
@@ -67,7 +110,31 @@ class PipelineExportView(APIView):
         data = serializer.validated_data
 
         grants: LicenseGrants = getattr(request, "license_grants")
+        installed = getattr(request, "installed_license")
 
+        usage_result: UsageCheckResult = check_and_increment_usage(
+            installed_license=installed,
+            grants=grants,
+            action_key="advanced_export",  # important
+        )
+
+        if not usage_result.allowed:
+            return Response(
+                {
+                    "error_code": "usage_limit_exceeded",
+                    "detail": usage_result.reason
+                    or "Usage limit exceeded for this action.",
+                    "action": "advanced_export",
+                    "license_status": grants.status,
+                    "usage": {
+                        "daily_used": usage_result.daily_used,
+                        "daily_limit": usage_result.daily_limit,
+                        "monthly_used": usage_result.monthly_used,
+                        "monthly_limit": usage_result.monthly_limit,
+                    },
+                },
+                status=drf_status.HTTP_403_FORBIDDEN,
+            )
         response_payload = {
             "message": "Pipeline export accepted (stub).",
             "pipeline_id": data["pipeline_id"],

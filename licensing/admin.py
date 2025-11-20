@@ -58,7 +58,7 @@ class InstalledLicenseAdmin(admin.ModelAdmin):
         "installed_at",
         "last_validated_at",
         "updated_at",
-        "is_active",
+        # "is_active",
     )
 
     fieldsets = (
